@@ -12,8 +12,22 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Check RFQ deadlines daily at 8:00 AM
-        $schedule->command('rfq:check-deadlines')->dailyAt('08:00');
+        // WorkBalance: Aggregate team metrics daily at 2:00 AM
+        $schedule->call(function () {
+            $service = app(\App\Services\TeamMetricsAggregationService::class);
+            foreach (\App\Models\Team::all() as $team) {
+                try {
+                    $service->aggregateTeamMetrics($team, now()->subDay());
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to aggregate metrics for team {$team->id}: {$e->getMessage()}");
+                }
+            }
+        })->dailyAt('02:00')->name('aggregate-team-metrics');
+
+        // WorkBalance: Send daily check-in reminders at 9:00 AM
+        $schedule->job(\App\Jobs\SendDailyCheckInRemindersJob::class)
+            ->dailyAt('09:00')
+            ->name('send-check-in-reminders');
     }
 
     /**

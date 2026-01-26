@@ -11,8 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware('web')
-                ->group(base_path('routes/supplier.php'));
+            // WorkBalance routes are in web.php
 
             if (app()->environment('local')) {
                 Route::middleware('web')
@@ -27,8 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'supplier' => \App\Http\Middleware\EnsureUserIsSupplier::class,
-            'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);

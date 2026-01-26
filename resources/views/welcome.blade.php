@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'DPanel') }} - Modern Procurement Platform</title>
+    <title>{{ config('app.name', 'WorkBalance') }} - Private wellbeing space</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|inter:300,400,500,600,700&display=swap" rel="stylesheet"/>
     <style>
@@ -969,18 +969,10 @@
                 <img src="{{ asset('/assets/images/fluxa_transparent.png') }}" style="height: 6vh" alt="Logo dark"/>
             </div>
             <nav class="nav-links">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="btn btn-primary glow-on-hover">
-                        Dashboard →
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="nav-link">Sign In</a>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-primary glow-on-hover">
-                            Get Started →
-                        </a>
-                    @endif
-                @endauth
+                <a href="#overview">Care</a>
+                <a href="#features">Wellbeing</a>
+                <a href="#workflow">Flow</a>
+                <a href="#cta" class="cta-button">Enter WorkBalance</a>
             </nav>
         </div>
     </div>
@@ -991,29 +983,28 @@
     <div class="container">
         <div class="hero-badge">
             <span class="badge-icon">✨</span>
-            Next-Generation Procurement Platform
+            WorkBalance • Calm, private wellbeing
         </div>
         <h1 class="hero-title">
-            Streamline Your<br>
-            <span class="gradient-text" data-text="Procurement Process">Procurement Process</span>
+            A calm space for<br>
+            <span class="gradient-text" data-text="everyday care">everyday care</span>
         </h1>
         <p class="hero-description">
-            Experience the future of procurement management with our cutting-edge platform.
-            Designed for enterprises who demand excellence, efficiency, and innovation.
+            A therapist-inspired companion for employees to check in, process feelings, and take gentle steps forward. Employers see only aggregated signals—never personal notes.
         </p>
         <div class="hero-actions">
             @auth
                 <a href="{{ route('dashboard') }}" class="btn btn-primary glow-on-hover">
-                    Go to Dashboard →
+                    Enter HumanOps Intelligence →
                 </a>
             @else
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}" class="btn btn-primary glow-on-hover">
-                        Start Free Trial →
+                        Start WorkBalance →
                     </a>
                 @endif
                 <a href="{{ route('login') }}" class="btn btn-secondary">
-                    Sign In
+                    Sign in
                 </a>
             @endauth
         </div>
@@ -1024,61 +1015,42 @@
 <section class="features">
     <div class="container">
         <div class="section-header reveal">
-            <span class="section-badge">Features</span>
-            <h2 class="section-title">Powerful Capabilities</h2>
+            <span class="section-badge">Wellbeing</span>
+            <h2 class="section-title">HumanOps & Care Flows</h2>
             <p class="section-subtitle">
-                Everything you need to transform your procurement operations
-                and drive measurable results
+                Gentle employee support with privacy-first HumanOps insights for employers.
             </p>
         </div>
         <div class="features-grid">
             <div class="feature-card reveal glow-on-hover">
-                <div class="feature-icon">📋</div>
-                <h3 class="feature-title">RFQ Management</h3>
-                <p class="feature-description">
-                    Create, track, and manage Request for Quotations with intelligent
-                    automation, real-time analytics, and seamless collaboration tools.
-                </p>
+                <div class="feature-icon">🧘‍♀️</div>
+                <h3 class="feature-title">Daily Check-ins</h3>
+                <p class="feature-description">Mood + energy check-ins that stay private to each employee.</p>
             </div>
             <div class="feature-card reveal glow-on-hover">
-                <div class="feature-icon">🤝</div>
-                <h3 class="feature-title">Supplier Portal</h3>
-                <p class="feature-description">
-                    Connect with suppliers through an intuitive portal featuring quote
-                    management, bid comparison, and transparent communication channels.
-                </p>
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">HumanOps Insights</h3>
+                <p class="feature-description">Aggregated stress and engagement signals by team—no individual data.</p>
             </div>
             <div class="feature-card reveal glow-on-hover">
-                <div class="feature-icon">📊</div>
-                <h3 class="feature-title">Advanced Analytics</h3>
-                <p class="feature-description">
-                    Unlock actionable insights with comprehensive dashboards, predictive
-                    analytics, and detailed performance metrics.
-                </p>
+                <div class="feature-icon">🌿</div>
+                <h3 class="feature-title">Therapeutic Paths</h3>
+                <p class="feature-description">Guided flows with validation, regulation, and micro-steps.</p>
             </div>
             <div class="feature-card reveal glow-on-hover">
-                <div class="feature-icon">⚡</div>
-                <h3 class="feature-title">Smart Automation</h3>
-                <p class="feature-description">
-                    Accelerate processes with AI-powered workflows, automated approvals,
-                    intelligent reminders, and smart recommendations.
-                </p>
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Anonymous Feedback</h3>
+                <p class="feature-description">Employees can share signals without exposing identity.</p>
+            </div>
+            <div class="feature-card reveal glow-on-hover">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">Burnout Guardrails</h3>
+                <p class="feature-description">Cohort-level burnout thresholds and calm nudges for managers.</p>
             </div>
             <div class="feature-card reveal glow-on-hover">
                 <div class="feature-icon">🔒</div>
-                <h3 class="feature-title">Enterprise Security</h3>
-                <p class="feature-description">
-                    Bank-grade encryption, granular access controls, comprehensive audit
-                    trails, and full compliance monitoring.
-                </p>
-            </div>
-            <div class="feature-card reveal glow-on-hover">
-                <div class="feature-icon">🌐</div>
-                <h3 class="feature-title">Global Operations</h3>
-                <p class="feature-description">
-                    Manage procurement across multiple markets with multi-currency support,
-                    localization, and regional compliance.
-                </p>
+                <h3 class="feature-title">Privacy by Default</h3>
+                <p class="feature-description">Strict separation: employee journaling never leaves their space.</p>
             </div>
         </div>
     </div>
@@ -1089,20 +1061,20 @@
     <div class="container">
         <div class="stats-grid">
             <div class="stat-item reveal">
-                <div class="stat-number">10K+</div>
-                <div class="stat-label">Active Users</div>
+                <div class="stat-number">25K+</div>
+                <div class="stat-label">Daily check-ins</div>
             </div>
             <div class="stat-item reveal">
-                <div class="stat-number">50K+</div>
-                <div class="stat-label">RFQs Processed</div>
+                <div class="stat-number">180</div>
+                <div class="stat-label">Cohorts protected</div>
             </div>
             <div class="stat-item reveal">
-                <div class="stat-number">98%</div>
-                <div class="stat-label">Satisfaction Rate</div>
+                <div class="stat-number">99%</div>
+                <div class="stat-label">Privacy adherence</div>
             </div>
             <div class="stat-item reveal">
-                <div class="stat-number">24/7</div>
-                <div class="stat-label">Support Available</div>
+                <div class="stat-number">12m</div>
+                <div class="stat-label">Avg. relief time</div>
             </div>
         </div>
     </div>
@@ -1112,25 +1084,24 @@
 <section class="cta">
     <div class="container">
         <div class="cta-content reveal">
-            <h2 class="cta-title">Ready to Transform Your Procurement?</h2>
+            <h2 class="cta-title">Ready to support your people?</h2>
             <p class="cta-description">
-                Join thousands of forward-thinking companies leveraging DPanel
-                to achieve operational excellence and drive sustainable growth.
+                Invite employees into a private, therapist-inspired space while you receive calm, anonymized HumanOps signals to guide care.
             </p>
             <div class="cta-actions">
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn btn-primary glow-on-hover">
-                        Go to Dashboard →
-                    </a>
+                        Open HumanOps Intelligence →
+                     </a>
                 @else
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn btn-primary glow-on-hover">
-                            Create Free Account →
-                        </a>
+                            Start WorkBalance →
+                         </a>
                     @endif
                     <a href="{{ route('login') }}" class="btn btn-secondary">
-                        Sign In
-                    </a>
+                        Sign in
+                     </a>
                 @endauth
             </div>
         </div>

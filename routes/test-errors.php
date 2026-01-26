@@ -31,7 +31,7 @@ if (app()->environment('local')) {
     Route::get('/test-errors/{code}', function ($code) {
         $messages = [
             401 => 'You need to be logged in to access this resource.',
-            403 => 'This RFQ is not open for quotes.',
+            403 => 'You do not have permission to access this resource.',
             404 => 'The page you are looking for could not be found.',
             419 => 'Your session has expired. Please refresh and try again.',
             429 => 'You are making too many requests. Please slow down.',

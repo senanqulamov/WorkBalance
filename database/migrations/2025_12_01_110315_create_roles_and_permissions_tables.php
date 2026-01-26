@@ -11,7 +11,7 @@ return new class extends Migration
         // Roles table
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // admin, buyer, seller, supplier
+            $table->string('name')->unique(); // admin, owner, manager, employee
             $table->string('display_name');
             $table->text('description')->nullable();
             $table->boolean('is_system')->default(false); // System roles can't be deleted
@@ -21,7 +21,7 @@ return new class extends Migration
         // Permissions table
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // e.g., 'view_products', 'create_orders'
+            $table->string('name')->unique(); // e.g., 'view_teams', 'create_check_ins'
             $table->string('display_name');
             $table->text('description')->nullable();
             $table->string('group')->nullable(); // Group permissions by module
@@ -48,18 +48,11 @@ return new class extends Migration
             $table->unique(['user_id', 'role_id']);
         });
 
-        // Add role column to users table for quick access (optional, for backwards compatibility)
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('buyer')->after('is_active'); // Primary role
-            $table->boolean('is_admin')->default(false)->after('role');
-        });
+        // Note: is_admin column already exists in users table migration
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'is_admin']);
-        });
 
         Schema::dropIfExists('role_user');
         Schema::dropIfExists('permission_role');
