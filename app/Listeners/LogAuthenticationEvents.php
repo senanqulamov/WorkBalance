@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Models\ActivitySignal;
+use App\Models\Log;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
@@ -15,18 +15,18 @@ class LogAuthenticationEvents
      */
     public function handleLogin(Login $event): void
     {
-        ActivitySignal::create([
-            'team_id' => optional($event->user->teams()->first())->id,
-            'action_type' => 'user_login',
-            'description' => "User logged in",
-            'context' => 'authentication',
-            'occurred_at' => now(),
+        Log::create([
+            'user_id' => $event->user->id,
+            'type' => 'auth',
+            'action' => 'auth.login',
+            'message' => "User {$event->user->name} logged in",
             'metadata' => [
                 'email' => $event->user->email,
                 'guard' => $event->guard,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
             ],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
         ]);
     }
 
@@ -36,18 +36,18 @@ class LogAuthenticationEvents
     public function handleLogout(Logout $event): void
     {
         if ($event->user) {
-            ActivitySignal::create([
-                'team_id' => optional($event->user->teams()->first())->id,
-                'action_type' => 'user_logout',
-                'description' => "User logged out",
-                'context' => 'authentication',
-                'occurred_at' => now(),
+            Log::create([
+                'user_id' => $event->user->id,
+                'type' => 'auth',
+                'action' => 'auth.logout',
+                'message' => "User {$event->user->name} logged out",
                 'metadata' => [
                     'email' => $event->user->email,
                     'guard' => $event->guard,
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
                 ],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'created_at' => now(),
             ]);
         }
     }
@@ -57,17 +57,17 @@ class LogAuthenticationEvents
      */
     public function handleRegistered(Registered $event): void
     {
-        ActivitySignal::create([
-            'team_id' => null, // New user may not have team yet
-            'action_type' => 'user_registered',
-            'description' => "New user registered",
-            'context' => 'authentication',
-            'occurred_at' => now(),
+        Log::create([
+            'user_id' => $event->user->id,
+            'type' => 'auth',
+            'action' => 'auth.register',
+            'message' => "New user {$event->user->name} registered",
             'metadata' => [
                 'email' => $event->user->email,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
             ],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
         ]);
     }
 
@@ -76,18 +76,18 @@ class LogAuthenticationEvents
      */
     public function handleFailed(Failed $event): void
     {
-        ActivitySignal::create([
-            'team_id' => null,
-            'action_type' => 'login_failed',
-            'description' => "Failed login attempt",
-            'context' => 'authentication',
-            'occurred_at' => now(),
+        Log::create([
+            'user_id' => null,
+            'type' => 'auth',
+            'action' => 'auth.failed',
+            'message' => "Failed login attempt for {$event->credentials['email']}",
             'metadata' => [
-                'email' => $event->credentials['email'] ?? 'unknown',
+                'email' => $event->credentials['email'],
                 'guard' => $event->guard,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
             ],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
         ]);
     }
 }

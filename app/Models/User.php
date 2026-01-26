@@ -25,11 +25,51 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        // Role flags
+        'role',
         'is_admin',
-        'is_active',
+        'is_buyer',
+        'is_seller',
+        'is_supplier',
+        // Business info
+        'company_name',
+        'tax_id',
+        'business_type',
+        'business_description',
+        // Contact info
         'phone',
-        'timezone',
-        'language',
+        'mobile',
+        'website',
+        // Address
+        'address_line1',
+        'address_line2',
+        'city',
+        'state',
+        'postal_code',
+        'country',
+        // Supplier fields
+        'supplier_code',
+        'duns_number',
+        'ariba_network_id',
+        'payment_terms',
+        'currency',
+        'credit_limit',
+        'supplier_status',
+        'supplier_approved_at',
+        // Seller fields
+        'commission_rate',
+        'verified_seller',
+        'verified_at',
+        // Performance
+        'rating',
+        'total_orders',
+        'completed_orders',
+        'cancelled_orders',
+        // Status
+        'is_active',
+        'notes',
+        // Seller-owned worker
+        'seller_id',
     ];
 
     /**
@@ -55,7 +95,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
-            'is_active' => 'boolean',
+            'is_buyer' => 'boolean',
+            'is_seller' => 'boolean',
+            'is_supplier' => 'boolean',
             'verified_seller' => 'boolean',
             'is_active' => 'boolean',
             'payment_terms' => 'json',
@@ -80,8 +122,58 @@ class User extends Authenticatable
             ->implode('');
     }
 
-    // REMOVED: Old procurement relationships (orders, products, markets, quotes, rfqs, etc.)
-    // These have been replaced by WorkBalance/HumanOps relationships below
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Orders where this user is the buyer
+     */
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
+    /**
+     * Products supplied by this user (if supplier)
+     */
+    public function suppliedProducts(): HasMany
+    {
+        return $this->hasMany(Product::class, 'supplier_id');
+    }
+
+    /**
+     * Markets owned by this user (if seller)
+     */
+    public function markets(): HasMany
+    {
+        return $this->hasMany(Market::class, 'user_id');
+    }
+
+    /**
+     * Supplier invitations received by this supplier
+     */
+    public function supplierInvitations(): HasMany
+    {
+        return $this->hasMany(SupplierInvitation::class, 'supplier_id');
+    }
+
+    /**
+     * Quotes submitted by this supplier
+     */
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class, 'supplier_id');
+    }
+
+    /**
+     * RFQs created by this buyer
+     */
+    public function rfqs(): HasMany
+    {
+        return $this->hasMany(Request::class, 'buyer_id');
+    }
 
     // Role and Permission Relationships
 
@@ -337,146 +429,91 @@ class User extends Authenticatable
         return round(($completed / $this->total_orders) * 100, 2);
     }
 
-    // Scopes - Updated for WorkBalance
+    // Scopes
 
-    public function scopeEmployees($query)
+    public function scopeSuppliers($query)
     {
-        return $query->whereHas('roles', fn ($q) => $q->where('name', 'employee'));
+        return $query->whereHas('roles', fn ($q) => $q->where('name', 'supplier'));
     }
 
-    public function scopeManagers($query)
+    public function scopeActiveSuppliers($query)
     {
-        return $query->whereHas('roles', fn ($q) => $q->where('name', 'manager'));
+        return $query->whereHas('roles', fn ($q) => $q->where('name', 'supplier'))
+            ->where('supplier_status', 'active')
+            ->where('is_active', true);
     }
 
-    public function scopeOwners($query)
+    public function scopeSellers($query)
     {
-        return $query->whereHas('roles', fn ($q) => $q->where('name', 'owner'));
+        return $query->whereHas('roles', fn ($q) => $q->where('name', 'seller'));
+    }
+
+    public function scopeVerifiedSellers($query)
+    {
+        return $query->whereHas('roles', fn ($q) => $q->where('name', 'seller'))
+            ->where('verified_seller', true);
+    }
+
+    public function scopeBuyers($query)
+    {
+        return $query->whereHas('roles', fn ($q) => $q->where('name', 'buyer'));
     }
 
     public function scopeWithRole($query, string $role)
     {
-        return $query->whereHas('roles', fn ($q) => $q->where('name', strtolower($role)));
+        return match (strtolower($role)) {
+            'supplier' => $query->suppliers(),
+            'seller' => $query->sellers(),
+            'buyer' => $query->buyers(),
+            default => $query,
+        };
     }
 
     public function getDashboardRouteName(): string
     {
-        // WorkBalance routing: admin/manager → HumanOps, employee → WorkBalance
-        if ($this->isAdmin() || $this->canAccessHumanOps()) {
-            return 'dashboard'; // HumanOps Intelligence
+        // Priority: admin > supplier > seller > buyer > generic
+        if ($this->isAdmin()) {
+            return 'dashboard';
         }
 
-        if ($this->isEmployee() || $this->canAccessWorkBalance()) {
-            return 'workbalance.dashboard'; // Employee WorkBalance
+        if ($this->isSupplier()) {
+            return 'supplier.dashboard';
         }
 
-        // Fallback
+        if ($this->isSeller()) {
+            return 'seller.dashboard';
+        }
+
+        if ($this->isBuyer()) {
+            return 'buyer.dashboard';
+        }
+
+        // Fallback to global dashboard
         return 'dashboard';
     }
 
-    // REMOVED: seller(), workers(), workerMarkets() - old procurement relationships
-
     /**
-     * ========================================
-     * WORKBALANCE / HUMANOPS RELATIONSHIPS
-     * ========================================
+     * If this user is a worker, this references the seller owner account.
      */
-
-    /**
-     * Get the teams this user belongs to.
-     */
-    public function teams(): BelongsToMany
+    public function seller(): BelongsTo
     {
-        return $this->belongsToMany(Team::class, 'team_user');
+        return $this->belongsTo(User::class, 'seller_id');
     }
 
     /**
-     * Get the wellbeing cycles for this employee.
-     * PRIVACY: Only accessible by the employee themselves.
+     * Seller-owned worker accounts (Amazon-style).
      */
-    public function wellbeingCycles(): HasMany
+    public function workers(): HasMany
     {
-        return $this->hasMany(WellbeingCycle::class, 'employee_id');
+        return $this->hasMany(User::class, 'seller_id');
     }
 
     /**
-     * Get the emotional check-ins for this employee.
-     * PRIVACY: Never accessible to employers.
+     * Markets this worker is assigned to (market_users pivot).
      */
-    public function checkIns(): HasMany
+    public function workerMarkets(): BelongsToMany
     {
-        return $this->hasMany(EmotionalCheckIn::class, 'employee_id');
-    }
-
-    /**
-     * Get the therapeutic sessions for this employee.
-     * PRIVACY: Personal content never exposed to employers.
-     */
-    public function therapeuticSessions(): HasMany
-    {
-        return $this->hasMany(TherapeuticSession::class, 'employee_id');
-    }
-
-    /**
-     * Get the reflections for this employee.
-     * PRIVACY: Completely private to the employee.
-     */
-    public function reflections(): HasMany
-    {
-        return $this->hasMany(Reflection::class, 'employee_id');
-    }
-
-    /**
-     * Get teams managed by this user.
-     */
-    public function managedTeams(): HasMany
-    {
-        return $this->hasMany(Team::class, 'manager_id');
-    }
-
-    /**
-     * ========================================
-     * ROLE HELPERS FOR WORKBALANCE
-     * ========================================
-     */
-
-    /**
-     * Check if user is an employee (has WorkBalance access).
-     */
-    public function isEmployee(): bool
-    {
-        return $this->hasRole('employee') || $this->teams()->exists();
-    }
-
-    /**
-     * Check if user is a manager (has HumanOps access).
-     */
-    public function isManager(): bool
-    {
-        return $this->hasRole('manager') || $this->managedTeams()->exists();
-    }
-
-    /**
-     * Check if user is an owner (full HumanOps access).
-     */
-    public function isOwner(): bool
-    {
-        return $this->hasRole('owner');
-    }
-
-    /**
-     * Check if user has access to HumanOps Intelligence.
-     */
-    public function canAccessHumanOps(): bool
-    {
-        return $this->isAdmin() || $this->isManager() || $this->isOwner();
-    }
-
-    /**
-     * Check if user has access to WorkBalance employee area.
-     */
-    public function canAccessWorkBalance(): bool
-    {
-        return $this->isEmployee() || $this->isAdmin();
+        return $this->belongsToMany(Market::class, 'market_users')
+            ->withTimestamps();
     }
 }

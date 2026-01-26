@@ -3,7 +3,7 @@
 namespace App\Livewire\Logs;
 
 use App\Livewire\Traits\Alert;
-use App\Models\ActivitySignal;
+use App\Models\Log;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -14,23 +14,23 @@ class LogView extends Component
 
     public bool $showDetailModal = false;
 
-    public ?ActivitySignal $selectedSignal = null;
+    public ?Log $selectedLog = null;
 
     public function render(): View
     {
         return view('livewire.logs.log-view');
     }
 
-    #[On('load::activity-signal')]
-    public function load(int $signalId): void
+    #[On('load::log')]
+    public function load(int $log): void
     {
-        $this->selectedSignal = ActivitySignal::with('team')->find($signalId);
+        $this->selectedLog = Log::with('user')->find($log);
         $this->showDetailModal = true;
     }
 
     public function closeDetailModal(): void
     {
         $this->showDetailModal = false;
-        $this->selectedSignal = null;
+        $this->selectedLog = null;
     }
 }

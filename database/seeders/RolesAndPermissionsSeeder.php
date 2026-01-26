@@ -12,7 +12,7 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('🔐 Setting up WorkBalance roles and permissions...');
+        $this->command->info('🔐 Setting up roles and permissions...');
 
         // Create Permissions
         $permissions = $this->createPermissions();
@@ -27,74 +27,78 @@ class RolesAndPermissionsSeeder extends Seeder
         $this->command->info('✅ Assigned permissions to roles');
 
         // Create Admin User
-        $this->createAdminUser($roles);
+            $this->createAdminUser($roles);
     }
 
     private function createPermissions(): array
     {
         $permissionsList = [
-            // Dashboard & Core
-            ['name' => 'view_dashboard', 'display_name' => 'View Dashboard', 'group' => 'Core'],
-            ['name' => 'view_settings', 'display_name' => 'View Settings', 'group' => 'Core'],
-            ['name' => 'edit_settings', 'display_name' => 'Edit Settings', 'group' => 'Core'],
+            // Dashboard
+            ['name' => 'view_dashboard', 'display_name' => 'View Dashboard', 'group' => 'Dashboard'],
 
-            // Users & Team Management
+            // Users
             ['name' => 'view_users', 'display_name' => 'View Users', 'group' => 'Users'],
             ['name' => 'create_users', 'display_name' => 'Create Users', 'group' => 'Users'],
             ['name' => 'edit_users', 'display_name' => 'Edit Users', 'group' => 'Users'],
             ['name' => 'delete_users', 'display_name' => 'Delete Users', 'group' => 'Users'],
 
-            // HumanOps Intelligence (Employer Side)
-            ['name' => 'view_humanops', 'display_name' => 'View HumanOps Intelligence', 'group' => 'HumanOps'],
-            ['name' => 'view_team_metrics', 'display_name' => 'View Team Metrics', 'group' => 'HumanOps'],
-            ['name' => 'view_burnout_signals', 'display_name' => 'View Burnout Signals', 'group' => 'HumanOps'],
-            ['name' => 'view_stress_trends', 'display_name' => 'View Stress Trends', 'group' => 'HumanOps'],
-            ['name' => 'view_human_events', 'display_name' => 'View Human Events', 'group' => 'HumanOps'],
-            ['name' => 'export_humanops_data', 'display_name' => 'Export HumanOps Data', 'group' => 'HumanOps'],
+            // Products
+            ['name' => 'view_products', 'display_name' => 'View Products', 'group' => 'Products'],
+            ['name' => 'create_products', 'display_name' => 'Create Products', 'group' => 'Products'],
+            ['name' => 'edit_products', 'display_name' => 'Edit Products', 'group' => 'Products'],
+            ['name' => 'delete_products', 'display_name' => 'Delete Products', 'group' => 'Products'],
 
-            // Teams Management
-            ['name' => 'view_teams', 'display_name' => 'View Teams', 'group' => 'Teams'],
-            ['name' => 'create_teams', 'display_name' => 'Create Teams', 'group' => 'Teams'],
-            ['name' => 'edit_teams', 'display_name' => 'Edit Teams', 'group' => 'Teams'],
-            ['name' => 'delete_teams', 'display_name' => 'Delete Teams', 'group' => 'Teams'],
-            ['name' => 'manage_team_members', 'display_name' => 'Manage Team Members', 'group' => 'Teams'],
+            // Orders
+            ['name' => 'view_orders', 'display_name' => 'View Orders', 'group' => 'Orders'],
+            ['name' => 'create_orders', 'display_name' => 'Create Orders', 'group' => 'Orders'],
+            ['name' => 'edit_orders', 'display_name' => 'Edit Orders', 'group' => 'Orders'],
+            ['name' => 'delete_orders', 'display_name' => 'Delete Orders', 'group' => 'Orders'],
 
-            // Therapeutic Paths Management
-            ['name' => 'view_therapeutic_paths', 'display_name' => 'View Therapeutic Paths', 'group' => 'Paths'],
-            ['name' => 'create_therapeutic_paths', 'display_name' => 'Create Therapeutic Paths', 'group' => 'Paths'],
-            ['name' => 'edit_therapeutic_paths', 'display_name' => 'Edit Therapeutic Paths', 'group' => 'Paths'],
-            ['name' => 'delete_therapeutic_paths', 'display_name' => 'Delete Therapeutic Paths', 'group' => 'Paths'],
+            // RFQs
+            ['name' => 'view_rfqs', 'display_name' => 'View RFQs', 'group' => 'RFQ'],
+            ['name' => 'create_rfqs', 'display_name' => 'Create RFQs', 'group' => 'RFQ'],
+            ['name' => 'edit_rfqs', 'display_name' => 'Edit RFQs', 'group' => 'RFQ'],
+            ['name' => 'delete_rfqs', 'display_name' => 'Delete RFQs', 'group' => 'RFQ'],
+            ['name' => 'submit_quotes', 'display_name' => 'Submit Quotes', 'group' => 'RFQ'],
+            ['name' => 'view_quotes', 'display_name' => 'View Quotes', 'group' => 'RFQ'],
+            ['name' => 'edit_quotes', 'display_name' => 'Edit Quotes', 'group' => 'RFQ'],
 
-            // WorkBalance (Employee Side)
-            ['name' => 'access_workbalance', 'display_name' => 'Access WorkBalance', 'group' => 'WorkBalance'],
-            ['name' => 'create_check_ins', 'display_name' => 'Create Check-ins', 'group' => 'WorkBalance'],
-            ['name' => 'start_therapeutic_sessions', 'display_name' => 'Start Therapeutic Sessions', 'group' => 'WorkBalance'],
-            ['name' => 'view_own_progress', 'display_name' => 'View Own Progress', 'group' => 'WorkBalance'],
-            ['name' => 'create_reflections', 'display_name' => 'Create Reflections', 'group' => 'WorkBalance'],
+            // Markets
+            ['name' => 'view_markets', 'display_name' => 'View Markets', 'group' => 'Markets'],
+            ['name' => 'create_markets', 'display_name' => 'Create Markets', 'group' => 'Markets'],
+            ['name' => 'edit_markets', 'display_name' => 'Edit Markets', 'group' => 'Markets'],
+            ['name' => 'delete_markets', 'display_name' => 'Delete Markets', 'group' => 'Markets'],
 
-            // Organizations (for multi-tenant future)
-            ['name' => 'view_organizations', 'display_name' => 'View Organizations', 'group' => 'Organizations'],
-            ['name' => 'edit_organizations', 'display_name' => 'Edit Organizations', 'group' => 'Organizations'],
+            // Supplier Portal
+            ['name' => 'access_supplier_portal', 'display_name' => 'Access Supplier Portal', 'group' => 'Supplier'],
+            ['name' => 'manage_supplier_invitations', 'display_name' => 'Manage Invitations', 'group' => 'Supplier'],
 
-            // Privacy & Compliance
+            // Settings
+            ['name' => 'view_settings', 'display_name' => 'View Settings', 'group' => 'Settings'],
+            ['name' => 'edit_settings', 'display_name' => 'Edit Settings', 'group' => 'Settings'],
+
+            // Logs
+            ['name' => 'view_logs', 'display_name' => 'View Logs', 'group' => 'Logs'],
+
+            // Privacy/Roles
             ['name' => 'manage_roles', 'display_name' => 'Manage Roles', 'group' => 'Privacy'],
-            ['name' => 'view_activity_signals', 'display_name' => 'View Activity Signals', 'group' => 'Privacy'],
+            ['name' => 'manage_permissions', 'display_name' => 'Manage Permissions', 'group' => 'Privacy'],
 
-            // System & Monitoring
-            ['name' => 'view_health', 'display_name' => 'View System Health', 'group' => 'System'],
-            ['name' => 'view_notifications', 'display_name' => 'View Notifications', 'group' => 'System'],
-            ['name' => 'view_monitoring', 'display_name' => 'View Monitoring', 'group' => 'System'],
-            ['name' => 'manage_feature_flags', 'display_name' => 'Manage Feature Flags', 'group' => 'System'],
+            // Admin Panel Enhancements
+            ['name' => 'view_health', 'display_name' => 'View System Health', 'group' => 'Admin'],
+            ['name' => 'view_notifications', 'display_name' => 'View Notifications', 'group' => 'Admin'],
+            ['name' => 'use_search', 'display_name' => 'Use Global Search', 'group' => 'Admin'],
+            ['name' => 'view_monitoring', 'display_name' => 'View RFQ Monitoring', 'group' => 'Admin'],
+            ['name' => 'manage_sla', 'display_name' => 'Manage SLA', 'group' => 'Admin'],
+            ['name' => 'view_feature_flags', 'display_name' => 'View Feature Flags', 'group' => 'Admin'],
+            ['name' => 'manage_feature_flags', 'display_name' => 'Manage Feature Flags', 'group' => 'Admin'],
         ];
 
         $permissions = [];
         foreach ($permissionsList as $perm) {
             $permissions[$perm['name']] = Permission::firstOrCreate(
                 ['name' => $perm['name']],
-                [
-                    'display_name' => $perm['display_name'],
-                    'group' => $perm['group'],
-                ]
+                $perm
             );
         }
 
@@ -107,33 +111,40 @@ class RolesAndPermissionsSeeder extends Seeder
             [
                 'name' => 'admin',
                 'display_name' => 'Administrator',
-                'description' => 'Full system access to both HumanOps and WorkBalance',
+                'description' => 'Full system access - can do everything',
+                'is_system' => true,
             ],
             [
-                'name' => 'owner',
-                'display_name' => 'Organization Owner',
-                'description' => 'Full HumanOps access, organizational management',
+                'name' => 'buyer',
+                'display_name' => 'Buyer',
+                'description' => 'Can create RFQs, view quotes, and place orders',
+                'is_system' => true,
             ],
             [
-                'name' => 'manager',
-                'display_name' => 'Team Manager',
-                'description' => 'HumanOps access for assigned teams, aggregated insights only',
+                'name' => 'seller',
+                'display_name' => 'Seller',
+                'description' => 'Can manage markets and sell products',
+                'is_system' => true,
             ],
             [
-                'name' => 'employee',
-                'display_name' => 'Employee',
-                'description' => 'WorkBalance access for personal wellbeing tracking',
+                'name' => 'supplier',
+                'display_name' => 'Supplier',
+                'description' => 'Can respond to RFQs and submit quotes',
+                'is_system' => true,
+            ],
+            [
+                'name' => 'market_worker',
+                'display_name' => 'Market Worker',
+                'description' => 'Worker account managed by a seller; can be assigned to one or more markets',
+                'is_system' => true,
             ],
         ];
 
         $roles = [];
-        foreach ($rolesList as $roleData) {
-            $roles[$roleData['name']] = Role::firstOrCreate(
-                ['name' => $roleData['name']],
-                [
-                    'display_name' => $roleData['display_name'],
-                    'description' => $roleData['description'],
-                ]
+        foreach ($rolesList as $role) {
+            $roles[$role['name']] = Role::firstOrCreate(
+                ['name' => $role['name']],
+                $role
             );
         }
 
@@ -142,74 +153,95 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private function assignPermissionsToRoles(array $roles, array $permissions): void
     {
-        // Admin - All permissions
-        $roles['admin']->permissions()->sync(array_values(array_map(fn($p) => $p->id, $permissions)));
+        // Admin - all permissions
+        $roles['admin']->permissions()->sync(array_map(fn ($perm) => $perm->id, $permissions));
 
-        // Owner - HumanOps + Management
-        $roles['owner']->permissions()->sync([
+        // Buyer permissions
+        $roles['buyer']->permissions()->sync([
             $permissions['view_dashboard']->id,
-            $permissions['view_humanops']->id,
-            $permissions['view_team_metrics']->id,
-            $permissions['view_burnout_signals']->id,
-            $permissions['view_stress_trends']->id,
-            $permissions['view_human_events']->id,
-            $permissions['export_humanops_data']->id,
-            $permissions['view_teams']->id,
-            $permissions['create_teams']->id,
-            $permissions['edit_teams']->id,
-            $permissions['delete_teams']->id,
-            $permissions['manage_team_members']->id,
-            $permissions['view_users']->id,
-            $permissions['create_users']->id,
-            $permissions['edit_users']->id,
-            $permissions['view_organizations']->id,
-            $permissions['edit_organizations']->id,
-            $permissions['view_therapeutic_paths']->id,
-            $permissions['create_therapeutic_paths']->id,
-            $permissions['edit_therapeutic_paths']->id,
+            $permissions['view_products']->id,
+            $permissions['view_orders']->id,
+            $permissions['create_orders']->id,
+            $permissions['view_rfqs']->id,
+            $permissions['create_rfqs']->id,
+            $permissions['edit_rfqs']->id,
+            $permissions['view_quotes']->id,
+            $permissions['view_markets']->id,
             $permissions['view_settings']->id,
-            $permissions['view_notifications']->id,
+            $permissions['view_logs']->id,
         ]);
 
-        // Manager - Limited HumanOps for their teams
-        $roles['manager']->permissions()->sync([
+        // Seller permissions
+        $roles['seller']->permissions()->sync([
             $permissions['view_dashboard']->id,
-            $permissions['view_humanops']->id,
-            $permissions['view_team_metrics']->id,
-            $permissions['view_burnout_signals']->id,
-            $permissions['view_stress_trends']->id,
-            $permissions['view_human_events']->id,
-            $permissions['view_teams']->id,
-            $permissions['view_therapeutic_paths']->id,
-            $permissions['view_notifications']->id,
+            $permissions['view_products']->id,
+            $permissions['create_products']->id,
+            $permissions['edit_products']->id,
+            $permissions['view_orders']->id,
+            $permissions['view_markets']->id,
+            $permissions['create_markets']->id,
+            $permissions['edit_markets']->id,
+            $permissions['view_settings']->id,
+            $permissions['view_logs']->id,
         ]);
 
-        // Employee - WorkBalance only
-        $roles['employee']->permissions()->sync([
-            $permissions['access_workbalance']->id,
-            $permissions['create_check_ins']->id,
-            $permissions['start_therapeutic_sessions']->id,
-            $permissions['view_own_progress']->id,
-            $permissions['create_reflections']->id,
-            $permissions['view_therapeutic_paths']->id,
+        // Supplier permissions
+        $roles['supplier']->permissions()->sync([
+            $permissions['view_dashboard']->id,
+            $permissions['view_products']->id,
+            $permissions['view_markets']->id,
+            $permissions['view_rfqs']->id,
+            $permissions['submit_quotes']->id,
+            $permissions['view_quotes']->id,
+            $permissions['edit_quotes']->id,
+            $permissions['view_orders']->id,
+            $permissions['create_orders']->id,
+            $permissions['access_supplier_portal']->id,
+            $permissions['manage_supplier_invitations']->id,
+            $permissions['view_settings']->id,
         ]);
     }
 
     private function createAdminUser(array $roles): void
     {
         $admin = User::firstOrCreate(
-            ['email' => 'admin@workbalance.local'],
+            ['email' => 'admin@dpanel.test'],
             [
                 'name' => 'System Administrator',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'is_admin' => true,
+                'is_buyer' => true,
+                'is_seller' => true,
+                'is_supplier' => true,
+                'role' => 'admin',
                 'is_active' => true,
+                // Complete profile for admin
+                'company_name' => 'DPanel Administration',
+                'tax_id' => 'TAX-ADMIN001',
+                'business_type' => 'Corporation',
+                'business_description' => 'System administration and management',
+                'phone' => '+1-555-0100',
+                'mobile' => '+1-555-0101',
+                'website' => 'https://dpanel.test',
+                'address_line1' => '123 Admin Street',
+                'address_line2' => 'Suite 100',
+                'city' => 'Tech City',
+                'state' => 'California',
+                'postal_code' => '90210',
+                'country' => 'United States',
+                'rating' => 5.0,
+                'total_orders' => 0,
+                'completed_orders' => 0,
+                'cancelled_orders' => 0,
             ]
         );
 
-        $admin->roles()->syncWithoutDetaching([$roles['admin']->id]);
+        // Ensure admin role is attached
+        if (!$admin->roles()->where('name', 'admin')->exists()) {
+            $admin->roles()->attach($roles['admin']);
+        }
 
-        $this->command->info("✅ Admin user created: admin@workbalance.local / password");
+        $this->command->info('✅ Admin user: admin@dpanel.test / password');
     }
 }

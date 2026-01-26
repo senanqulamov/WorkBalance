@@ -3,148 +3,21 @@
 namespace App\Livewire\Dashboard;
 
 use App\Livewire\Traits\WithLogging;
-use App\Models\ActivitySignal;
-use App\Models\Team;
-use App\Models\TeamMetric;
-use App\Models\HumanEvent;
+use App\Models\Log;
+use App\Models\Market;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Quote;
+use App\Models\Request;
+use App\Models\SupplierInvitation;
 use App\Models\User;
+use App\Models\WorkflowEvent;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
-/**
- * HumanOps Intelligence Dashboard
- *
- * Aggregated, anonymized wellbeing insights for employers.
- * No individual employee data is accessible here.
- */
 class Index extends Component
 {
     use WithLogging;
-
-    public $stats = [];
-    public $recentActivity = [];
-    public $teamMetrics = [];
-    public $stressTrends = [];
-    public $burnoutSignals = [];
-    public $recentEvents = [];
-    public $engagementData = [];
-
-    // Livewire listeners for frontend events
-    protected $listeners = [
-        'chartSegmentClicked',
-        'exportDashboardCsv',
-    ];
-
-    public function mount()
-    {
-        $this->logPageView('HumanOps Dashboard');
-        $this->loadStats();
-        $this->loadTeamMetrics();
-        $this->loadRecentHumanEvents();
-    }
-
-    public function chartSegmentClicked($chartId, $label = null, $index = null)
-    {
-        $this->logAction('ui', "Chart segment clicked: {$chartId} - {$label}", action: 'chart.click', metadata: ['chart' => $chartId, 'label' => $label, 'index' => $index]);
-        $this->dispatchBrowserEvent('humanops:chartSegmentSelected', ['chartId' => $chartId, 'label' => $label, 'index' => $index]);
-    }
-
-    public function exportDashboardCsv()
-    {
-        $this->logAction('ui', 'Export dashboard CSV requested', action: 'export.dashboard');
-        $this->dispatchBrowserEvent('humanops:export-started');
-    }
-
-    protected function loadStats()
-    {
-        // Get current counts
-        $totalEmployees = User::whereHas('roles', fn($q) => $q->where('name', 'employee'))->count();
-        $totalTeams = Team::where('is_active', true)->count();
-        $totalCheckIns = DB::table('emotional_check_ins')->whereDate('checked_in_at', today())->count();
-        $activeTeamsWithMetrics = TeamMetric::whereDate('metric_date', today())->count();
-
-        // Calculate trends
-        $previousEmployees = User::whereHas('roles', fn($q) => $q->where('name', 'employee'))
-            ->where('created_at', '<', now()->subDays(30))
-            ->count();
-
-        $employeesChange = $previousEmployees > 0 ? (($totalEmployees - $previousEmployees) / $previousEmployees) * 100 : 0;
-
-        $this->stats = [
-            'employees' => [
-                'count' => $totalEmployees,
-                'change' => round($employeesChange, 1),
-                'label' => __('Total Employees'),
-                'icon' => 'users',
-                'color' => 'blue',
-            ],
-            'teams' => [
-                'count' => $totalTeams,
-                'change' => 0,
-                'label' => __('Active Teams'),
-                'icon' => 'user-group',
-                'color' => 'purple',
-            ],
-            'check_ins_today' => [
-                'count' => $totalCheckIns,
-                'change' => 0,
-                'label' => __('Check-ins Today'),
-                'icon' => 'heart',
-                'color' => 'green',
-            ],
-            'teams_tracked' => [
-                'count' => $activeTeamsWithMetrics,
-                'change' => 0,
-                'label' => __('Teams Tracked'),
-                'icon' => 'chart-bar',
-                'color' => 'indigo',
-            ],
-        ];
-    }
-
-    protected function loadTeamMetrics()
-    {
-        // Load recent team wellbeing metrics
-        $this->teamMetrics = TeamMetric::with('team')
-            ->whereDate('metric_date', '>=', now()->subDays(7))
-            ->where('cohort_size', '>=', 5) // Privacy threshold
-            ->orderBy('metric_date', 'desc')
-            ->limit(20)
-            ->get()
-            ->map(function ($metric) {
-                return [
-                    'team_name' => $metric->team->name ?? 'Unknown',
-                    'date' => $metric->metric_date->format('M d'),
-                    'stress_trend' => $metric->stress_trend,
-                    'burnout_risk' => $metric->burnout_risk_level,
-                    'engagement' => $metric->engagement_rate,
-                    'cohort_size' => $metric->cohort_size,
-                ];
-            });
-    }
-
-    protected function loadRecentHumanEvents()
-    {
-        // Load recent anonymized events
-        $this->recentEvents = HumanEvent::with('team')
-            ->orderBy('occurred_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($event) {
-                return [
-                    'type' => $event->event_type,
-                    'description' => $event->description,
-                    'team' => $event->team->name ?? 'Organization-wide',
-                    'occurred_at' => $event->occurred_at->diffForHumans(),
-                ];
-            });
-    }
-
-    public function render()
-    {
-        return view('livewire.dashboard.index');
-    }
-}
     public $stats = [];
 
     public $recentActivity = [];

@@ -23,19 +23,62 @@ return new class extends Migration
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
 
-            // WorkBalance fields
-            $table->boolean('is_admin')->default(false);
-            $table->boolean('is_active')->default(true);
+            // Role flags - users can have multiple roles
+            $table->boolean('is_buyer')->default(true);
+            $table->boolean('is_seller')->default(false);
+            $table->boolean('is_supplier')->default(false);
+
+            // Business/Company Information
+            $table->string('company_name')->nullable();
+            $table->string('tax_id')->nullable(); // VAT/Tax ID
+            $table->string('business_type')->nullable(); // Individual, Company, Corporation
+            $table->text('business_description')->nullable();
+
+            // Contact Information
             $table->string('phone')->nullable();
-            $table->string('timezone')->nullable();
-            $table->string('language')->default('en');
+            $table->string('mobile')->nullable();
+            $table->string('website')->nullable();
+
+            // Address Information
+            $table->string('address_line1')->nullable();
+            $table->string('address_line2')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('country')->nullable();
+
+            // Supplier-Specific Fields (for Ariba integration)
+            $table->string('supplier_code')->nullable()->unique(); // Unique supplier identifier
+            $table->string('duns_number')->nullable(); // D-U-N-S Number (Ariba standard)
+            $table->string('ariba_network_id')->nullable(); // Ariba Network ID (ANID)
+            $table->json('payment_terms')->nullable(); // Net 30, Net 60, etc.
+            $table->string('currency')->default('USD');
+            $table->decimal('credit_limit', 15, 2)->nullable();
+            $table->enum('supplier_status', ['pending', 'active', 'inactive', 'blocked'])->default('pending');
+            $table->timestamp('supplier_approved_at')->nullable();
+
+            // Seller-Specific Fields
+            $table->decimal('commission_rate', 5, 2)->nullable(); // Commission %
+            $table->boolean('verified_seller')->default(false);
+            $table->timestamp('verified_at')->nullable();
+
+            // Performance Metrics
+            $table->decimal('rating', 3, 2)->nullable(); // Average rating (0.00 - 5.00)
+            $table->integer('total_orders')->default(0);
+            $table->integer('completed_orders')->default(0);
+            $table->integer('cancelled_orders')->default(0);
+
+            // Account Status
+            $table->boolean('is_active')->default(true);
+            $table->text('notes')->nullable(); // Internal notes
 
             $table->rememberToken();
             $table->timestamps();
 
             // Indexes for performance
-            $table->index(['is_admin', 'is_active']);
-            $table->index('email');
+            $table->index(['is_supplier', 'supplier_status']);
+            $table->index(['is_seller', 'verified_seller']);
+            $table->index(['is_buyer', 'is_active']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

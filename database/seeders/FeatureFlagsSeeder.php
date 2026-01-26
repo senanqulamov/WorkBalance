@@ -10,14 +10,11 @@ class FeatureFlagsSeeder extends Seeder
     public function run(): void
     {
         $flags = [
-            ['key' => 'humanops_notifications', 'description' => 'Enable HumanOps Notification Center', 'enabled' => true],
-            ['key' => 'humanops_health', 'description' => 'Enable System Health Page', 'enabled' => true],
-            ['key' => 'humanops_burnout_monitoring', 'description' => 'Enable Burnout Risk Monitoring', 'enabled' => true],
-            ['key' => 'humanops_stress_trends', 'description' => 'Enable Stress Trend Tracking', 'enabled' => true],
-            ['key' => 'workbalance_therapeutic_paths', 'description' => 'Enable Therapeutic Paths for Employees', 'enabled' => true],
-            ['key' => 'workbalance_reflections', 'description' => 'Enable Personal Reflections', 'enabled' => true],
-            ['key' => 'humanops_command_palette', 'description' => 'Enable Command Palette', 'enabled' => true],
-            ['key' => 'privacy_anonymization', 'description' => 'Enable Privacy Anonymization (minimum cohort enforcement)', 'enabled' => true],
+            ['key' => 'admin_notifications', 'description' => 'Enable Admin Notification Center', 'enabled' => true],
+            ['key' => 'admin_health', 'description' => 'Enable System Health Page', 'enabled' => true],
+            ['key' => 'admin_rfq_monitoring', 'description' => 'Enable RFQ Monitoring Page', 'enabled' => true],
+            ['key' => 'admin_sla', 'description' => 'Enable SLA Tracker Page', 'enabled' => true],
+            ['key' => 'admin_command_palette', 'description' => 'Enable Command Palette', 'enabled' => true],
         ];
 
         foreach ($flags as $flag) {

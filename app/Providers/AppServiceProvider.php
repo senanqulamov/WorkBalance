@@ -26,18 +26,18 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Registered::class, [LogAuthenticationEvents::class, 'handleRegistered']);
         Event::listen(Failed::class, [LogAuthenticationEvents::class, 'handleFailed']);
 
-        // Register WorkBalance model observers
-        \App\Models\EmotionalCheckIn::observe(\App\Observers\EmotionalCheckInObserver::class);
-        \App\Models\TherapeuticSession::observe(\App\Observers\TherapeuticSessionObserver::class);
-        \App\Models\TeamMetric::observe(\App\Observers\TeamMetricObserver::class);
+        // Register model observers for automatic workflow event tracking
+        // Observers automatically fire events and record to workflow_events table
+        \App\Models\Request::observe(\App\Observers\RequestObserver::class);
+        \App\Models\RequestItem::observe(\App\Observers\RequestItemObserver::class);
+        \App\Models\Quote::observe(\App\Observers\QuoteObserver::class);
+        \App\Models\QuoteItem::observe(\App\Observers\QuoteItemObserver::class);
 
-        // WorkBalance event listeners
-        Event::listen(\App\Events\BurnoutThresholdCrossed::class, function ($event) {
-            // Additional logging or actions can go here
-        });
-        Event::listen(\App\Events\StressTrendChanged::class, function ($event) {
-            // Additional logging or actions can go here
-        });
+        // Notification listeners (keep these - they don't create duplicates)
+        Event::listen(\App\Events\RequestStatusChanged::class, \App\Listeners\SendRequestStatusNotification::class);
+        Event::listen(\App\Events\SupplierInvited::class, \App\Listeners\SendSupplierInvitationNotification::class);
+        Event::listen(\App\Events\QuoteSubmitted::class, \App\Listeners\NotifyBuyerOfQuoteSubmission::class);
+        Event::listen(\App\Events\SlaReminderDue::class, \App\Listeners\SendSlaReminderNotification::class);
 
         TallStackUi::personalize()
             // ==================== SLIDE ====================

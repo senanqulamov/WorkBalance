@@ -3,7 +3,7 @@
 namespace App\Livewire\Logs;
 
 use App\Enums\TableHeaders;
-use App\Models\ActivitySignal;
+use App\Models\Log;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -22,16 +22,18 @@ class Index extends Component
     public ?string $typeFilter = null;
 
     public array $sort = [
-        'column' => 'occurred_at',
+        'column' => 'created_at',
         'direction' => 'desc',
     ];
 
     public array $headers = [
         ['index' => 'id', 'label' => '#'],
-        ['index' => 'action_type', 'label' => 'Action Type'],
-        ['index' => 'description', 'label' => 'Description'],
-        ['index' => 'team_id', 'label' => 'Team'],
-        ['index' => 'occurred_at', 'label' => 'Occurred'],
+        ['index' => 'type', 'label' => 'Type'],
+        ['index' => 'action', 'label' => 'Action'],
+        ['index' => 'message', 'label' => 'Message'],
+        ['index' => 'user_id', 'label' => 'User'],
+        ['index' => 'ip_address', 'label' => 'IP Address'],
+        ['index' => 'created_at', 'label' => 'Created'],
         ['index' => 'action_column', 'label' => 'Actions', 'sortable' => false],
     ];
 
@@ -49,30 +51,38 @@ class Index extends Component
     public function rows(): LengthAwarePaginator
     {
         if ($this->quantity == 'all') {
-            $this->quantity = ActivitySignal::count();
+            $this->quantity = Log::count();
         }
 
-        return ActivitySignal::query()
-            ->with('team')
+        return Log::query()
+            ->with('user')
             ->when($this->search !== null, fn (Builder $query) => $query->where(function ($q) {
-                $q->whereAny(['action_type', 'description'], 'like', '%'.trim($this->search).'%')
-                    ->orWhereHas('team', function ($teamQuery) {
-                        $teamQuery->where('name', 'like', '%'.trim($this->search).'%');
+                $q->whereAny(['type', 'action', 'message', 'ip_address'], 'like', '%'.trim($this->search).'%')
+                    ->orWhereHas('user', function ($userQuery) {
+                        $userQuery->where('name', 'like', '%'.trim($this->search).'%');
                     });
             }))
-            ->when($this->typeFilter !== null, fn (Builder $query) => $query->where('action_type', $this->typeFilter))
+            ->when($this->typeFilter !== null, fn (Builder $query) => $query->where('type', $this->typeFilter))
             ->orderBy(...array_values($this->sort))
             ->paginate($this->quantity)
             ->withQueryString();
     }
 
     #[Computed]
-    public function actionTypes(): array
+    public function logTypes(): array
     {
-        return ActivitySignal::query()
-            ->select('action_type')
+        return Log::query()
+            ->select('type')
             ->distinct()
-            ->pluck('action_type')
+            ->pluck('type')
+            ->toArray();
+    }
+
+    #[Computed]
+    public function logTypeOptions(): array
+    {
+        return collect($this->logTypes)
+            ->map(fn($type) => ['label' => ucfirst($type), 'value' => $type])
             ->toArray();
     }
 

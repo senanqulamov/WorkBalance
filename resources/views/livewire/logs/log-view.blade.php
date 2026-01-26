@@ -1,86 +1,116 @@
 <x-modal wire="showDetailModal" size="2xl" blur="xl">
-    @if($selectedSignal)
+    @if($selectedLog)
     <x-slot name="title">
-        @lang('Activity Signal Details') - #{{ $selectedSignal->id }}
+        @lang('Log Details') - #{{ $selectedLog->id }}
     </x-slot>
 
     <div class="space-y-4">
-        {{-- Action Type --}}
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                @lang('Action Type')
-            </label>
-            <x-badge
-                :text="Str::replace('_', ' ', Str::title($selectedSignal->action_type))"
-                :color="match($selectedSignal->action_type) {
-                    'check_in_completed' => 'green',
-                    'path_started' => 'blue',
-                    'path_completed' => 'purple',
-                    'reflection_created' => 'indigo',
-                    'session_started' => 'cyan',
-                    'session_completed' => 'green',
-                    'stress_trend_changed' => 'yellow',
-                    'burnout_threshold_crossed' => 'orange',
-                    'team_metric_aggregated' => 'slate',
-                    default => 'gray'
-                }"
-            />
+        {{-- Type and Action --}}
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    @lang('Type')
+                </label>
+                <x-badge
+                        :text="ucfirst($selectedLog->type)"
+                        :color="match($selectedLog->type) {
+                            'error' => 'red',
+                            'warning' => 'yellow',
+                            'info' => 'blue',
+                            'success' => 'green',
+                            'create' => 'green',
+                            'update' => 'blue',
+                            'delete' => 'red',
+                            'login' => 'green',
+                            'logout' => 'gray',
+                            default => 'gray'
+                        }"
+                />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    @lang('Action')
+                </label>
+                <p class="text-sm text-gray-900 dark:text-gray-100">{{ $selectedLog->action ?? '-' }}</p>
+            </div>
         </div>
 
-        {{-- Description --}}
+        {{-- Message --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                @lang('Description')
+                @lang('Message')
             </label>
             <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded">
-                {{ $selectedSignal->description }}
+                {{ $selectedLog->message }}
             </p>
         </div>
 
-        {{-- Context --}}
-        @if($selectedSignal->context)
+        {{-- Model Info --}}
+        @if($selectedLog->model)
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Model
+                    </label>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ $selectedLog->model }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Model ID
+                    </label>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ $selectedLog->model_id }}</p>
+                </div>
+            </div>
+        @endif
+
+        {{-- User Info --}}
+        <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    @lang('Context')
+                    @lang('User')
                 </label>
-                <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded">
-                    {{ $selectedSignal->context }}
+                <p class="text-sm text-gray-900 dark:text-gray-100">
+                    {{ $selectedLog->user ? $selectedLog->user->name : 'System' }}
+                </p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    @lang('IP Address')
+                </label>
+                <p class="text-sm font-mono text-gray-900 dark:text-gray-100">{{ $selectedLog->ip_address ?? '-' }}</p>
+            </div>
+        </div>
+
+        {{-- User Agent --}}
+        @if($selectedLog->user_agent)
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    User Agent
+                </label>
+                <p class="text-xs font-mono text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded break-all">
+                    {{ $selectedLog->user_agent }}
                 </p>
             </div>
         @endif
 
-        {{-- Team Info (Privacy: No individual identification) --}}
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                @lang('Team')
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100">
-                {{ $selectedSignal->team ? $selectedSignal->team->name : 'Anonymous' }}
-            </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <x-icon name="lock-closed" class="inline h-3 w-3" />
-                Individual identity protected by design
-            </p>
-        </div>
-
         {{-- Metadata --}}
-        @if($selectedSignal->metadata)
+        @if($selectedLog->metadata)
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    @lang('Metadata')
+                    Metadata
                 </label>
-                <pre class="text-xs font-mono text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded overflow-x-auto">{{ json_encode($selectedSignal->metadata, JSON_PRETTY_PRINT) }}</pre>
+                <pre class="text-xs font-mono text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded overflow-x-auto">{{ json_encode($selectedLog->metadata, JSON_PRETTY_PRINT) }}</pre>
             </div>
         @endif
 
         {{-- Timestamp --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                @lang('Occurred At')
+                @lang('Created')
             </label>
             <p class="text-sm text-gray-900 dark:text-gray-100">
-                {{ $selectedSignal->occurred_at->format('Y-m-d H:i:s') }}
-                <span class="text-gray-500">({{ $selectedSignal->occurred_at->diffForHumans() }})</span>
+                {{ $selectedLog->created_at->format('Y-m-d H:i:s') }}
+                <span class="text-gray-500">({{ $selectedLog->created_at->diffForHumans() }})</span>
             </p>
         </div>
     </div>
