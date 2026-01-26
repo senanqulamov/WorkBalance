@@ -4,244 +4,158 @@ namespace Database\Seeders;
 
 use App\Models\Permission;
 use App\Models\Role;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('🔐 Setting up roles and permissions...');
+        $this->command->info('🔐 Seeding Roles and Permissions...');
+        $this->command->newLine();
 
         // Create Permissions
+        $this->command->info('Creating permissions...');
         $permissions = $this->createPermissions();
-        $this->command->info("✅ Created " . count($permissions) . " permissions");
+        $this->command->info("  ✓ Created {$permissions->count()} permissions");
+        $this->command->newLine();
 
         // Create Roles
-        $roles = $this->createRoles();
-        $this->command->info("✅ Created " . count($roles) . " roles");
+        $this->command->info('Creating roles...');
+        $roles = $this->createRoles($permissions);
+        $this->command->info("  ✓ Created {$roles->count()} roles");
+        $this->command->newLine();
 
-        // Assign Permissions to Roles
-        $this->assignPermissionsToRoles($roles, $permissions);
-        $this->command->info('✅ Assigned permissions to roles');
-
-        // Create Admin User
-            $this->createAdminUser($roles);
+        $this->command->info('✅ Roles and permissions seeded successfully!');
     }
 
-    private function createPermissions(): array
+    protected function createPermissions()
     {
-        $permissionsList = [
-            // Dashboard
-            ['name' => 'view_dashboard', 'display_name' => 'View Dashboard', 'group' => 'Dashboard'],
-
-            // Users
-            ['name' => 'view_users', 'display_name' => 'View Users', 'group' => 'Users'],
-            ['name' => 'create_users', 'display_name' => 'Create Users', 'group' => 'Users'],
-            ['name' => 'edit_users', 'display_name' => 'Edit Users', 'group' => 'Users'],
-            ['name' => 'delete_users', 'display_name' => 'Delete Users', 'group' => 'Users'],
-
-            // Products
-            ['name' => 'view_products', 'display_name' => 'View Products', 'group' => 'Products'],
-            ['name' => 'create_products', 'display_name' => 'Create Products', 'group' => 'Products'],
-            ['name' => 'edit_products', 'display_name' => 'Edit Products', 'group' => 'Products'],
-            ['name' => 'delete_products', 'display_name' => 'Delete Products', 'group' => 'Products'],
-
-            // Orders
-            ['name' => 'view_orders', 'display_name' => 'View Orders', 'group' => 'Orders'],
-            ['name' => 'create_orders', 'display_name' => 'Create Orders', 'group' => 'Orders'],
-            ['name' => 'edit_orders', 'display_name' => 'Edit Orders', 'group' => 'Orders'],
-            ['name' => 'delete_orders', 'display_name' => 'Delete Orders', 'group' => 'Orders'],
-
-            // RFQs
-            ['name' => 'view_rfqs', 'display_name' => 'View RFQs', 'group' => 'RFQ'],
-            ['name' => 'create_rfqs', 'display_name' => 'Create RFQs', 'group' => 'RFQ'],
-            ['name' => 'edit_rfqs', 'display_name' => 'Edit RFQs', 'group' => 'RFQ'],
-            ['name' => 'delete_rfqs', 'display_name' => 'Delete RFQs', 'group' => 'RFQ'],
-            ['name' => 'submit_quotes', 'display_name' => 'Submit Quotes', 'group' => 'RFQ'],
-            ['name' => 'view_quotes', 'display_name' => 'View Quotes', 'group' => 'RFQ'],
-            ['name' => 'edit_quotes', 'display_name' => 'Edit Quotes', 'group' => 'RFQ'],
-
-            // Markets
-            ['name' => 'view_markets', 'display_name' => 'View Markets', 'group' => 'Markets'],
-            ['name' => 'create_markets', 'display_name' => 'Create Markets', 'group' => 'Markets'],
-            ['name' => 'edit_markets', 'display_name' => 'Edit Markets', 'group' => 'Markets'],
-            ['name' => 'delete_markets', 'display_name' => 'Delete Markets', 'group' => 'Markets'],
-
-            // Supplier Portal
-            ['name' => 'access_supplier_portal', 'display_name' => 'Access Supplier Portal', 'group' => 'Supplier'],
-            ['name' => 'manage_supplier_invitations', 'display_name' => 'Manage Invitations', 'group' => 'Supplier'],
+        $permissionsData = [
+            // Dashboard & Core
+            ['name' => 'view_dashboard', 'display_name' => 'View Dashboard', 'group' => 'dashboard', 'description' => 'Access main dashboard'],
+            ['name' => 'view_users', 'display_name' => 'View Users', 'group' => 'users', 'description' => 'View user list and details'],
+            ['name' => 'create_users', 'display_name' => 'Create Users', 'group' => 'users', 'description' => 'Create new users'],
+            ['name' => 'edit_users', 'display_name' => 'Edit Users', 'group' => 'users', 'description' => 'Edit existing users'],
+            ['name' => 'delete_users', 'display_name' => 'Delete Users', 'group' => 'users', 'description' => 'Delete users'],
 
             // Settings
-            ['name' => 'view_settings', 'display_name' => 'View Settings', 'group' => 'Settings'],
-            ['name' => 'edit_settings', 'display_name' => 'Edit Settings', 'group' => 'Settings'],
+            ['name' => 'view_settings', 'display_name' => 'View Settings', 'group' => 'settings', 'description' => 'Access settings'],
+            ['name' => 'manage_settings', 'display_name' => 'Manage Settings', 'group' => 'settings', 'description' => 'Modify system settings'],
+            ['name' => 'manage_feature_flags', 'display_name' => 'Manage Feature Flags', 'group' => 'settings', 'description' => 'Toggle feature flags'],
 
-            // Logs
-            ['name' => 'view_logs', 'display_name' => 'View Logs', 'group' => 'Logs'],
+            // Notifications
+            ['name' => 'view_notifications', 'display_name' => 'View Notifications', 'group' => 'notifications', 'description' => 'View notifications'],
 
-            // Privacy/Roles
-            ['name' => 'manage_roles', 'display_name' => 'Manage Roles', 'group' => 'Privacy'],
-            ['name' => 'manage_permissions', 'display_name' => 'Manage Permissions', 'group' => 'Privacy'],
+            // Logs (Admin Only)
+            ['name' => 'view_logs', 'display_name' => 'View Logs', 'group' => 'admin', 'description' => 'View system activity logs'],
+            ['name' => 'delete_logs', 'display_name' => 'Delete Logs', 'group' => 'admin', 'description' => 'Delete log entries'],
 
-            // Admin Panel Enhancements
-            ['name' => 'view_health', 'display_name' => 'View System Health', 'group' => 'Admin'],
-            ['name' => 'view_notifications', 'display_name' => 'View Notifications', 'group' => 'Admin'],
-            ['name' => 'use_search', 'display_name' => 'Use Global Search', 'group' => 'Admin'],
-            ['name' => 'view_monitoring', 'display_name' => 'View RFQ Monitoring', 'group' => 'Admin'],
-            ['name' => 'manage_sla', 'display_name' => 'Manage SLA', 'group' => 'Admin'],
-            ['name' => 'view_feature_flags', 'display_name' => 'View Feature Flags', 'group' => 'Admin'],
-            ['name' => 'manage_feature_flags', 'display_name' => 'Manage Feature Flags', 'group' => 'Admin'],
+            // Roles & Permissions (Admin Only)
+            ['name' => 'manage_roles', 'display_name' => 'Manage Roles', 'group' => 'admin', 'description' => 'Create, edit, and delete roles'],
+            ['name' => 'manage_permissions', 'display_name' => 'Manage Permissions', 'group' => 'admin', 'description' => 'Assign permissions to roles'],
+            ['name' => 'assign_roles', 'display_name' => 'Assign Roles', 'group' => 'admin', 'description' => 'Assign roles to users'],
+
+            // HumanOps (Employer Only)
+            ['name' => 'view_humanops', 'display_name' => 'View HumanOps', 'group' => 'humanops', 'description' => 'Access HumanOps Intelligence'],
+            ['name' => 'view_humanops_overview', 'display_name' => 'View Organization Overview', 'group' => 'humanops', 'description' => 'View organization-level insights'],
+            ['name' => 'view_humanops_departments', 'display_name' => 'View Department Insights', 'group' => 'humanops', 'description' => 'View department-level data'],
+            ['name' => 'view_humanops_risk_signals', 'display_name' => 'View Risk Signals', 'group' => 'humanops', 'description' => 'View detected risks'],
+            ['name' => 'view_humanops_recommendations', 'display_name' => 'View Recommendations', 'group' => 'humanops', 'description' => 'View suggested actions'],
+            ['name' => 'view_humanops_trends', 'display_name' => 'View Trends', 'group' => 'humanops', 'description' => 'View historical trends'],
+            ['name' => 'acknowledge_recommendations', 'display_name' => 'Acknowledge Recommendations', 'group' => 'humanops', 'description' => 'Mark recommendations as reviewed'],
+
+            // WorkBalance (Employee Only)
+            ['name' => 'use_workbalance', 'display_name' => 'Use WorkBalance', 'group' => 'workbalance', 'description' => 'Access WorkBalance wellness app'],
+            ['name' => 'submit_checkins', 'display_name' => 'Submit Check-ins', 'group' => 'workbalance', 'description' => 'Submit daily check-ins'],
+            ['name' => 'view_personal_insights', 'display_name' => 'View Personal Insights', 'group' => 'workbalance', 'description' => 'View personal well-being insights'],
+            ['name' => 'use_wellbeing_tools', 'display_name' => 'Use Well-being Tools', 'group' => 'workbalance', 'description' => 'Access breathing, grounding tools'],
+            ['name' => 'view_personal_trends', 'display_name' => 'View Personal Trends', 'group' => 'workbalance', 'description' => 'View personal trend charts'],
+            ['name' => 'manage_privacy_settings', 'display_name' => 'Manage Privacy Settings', 'group' => 'workbalance', 'description' => 'Control data aggregation consent'],
         ];
 
-        $permissions = [];
-        foreach ($permissionsList as $perm) {
-            $permissions[$perm['name']] = Permission::firstOrCreate(
-                ['name' => $perm['name']],
-                $perm
-            );
+        $permissions = collect();
+        foreach ($permissionsData as $permission) {
+            $permissions->push(Permission::firstOrCreate(
+                ['name' => $permission['name']],
+                $permission
+            ));
         }
 
         return $permissions;
     }
 
-    private function createRoles(): array
+    protected function createRoles($permissions)
     {
-        $rolesList = [
+        $roles = collect();
+
+        // Admin Role - Full Access
+        $this->command->info('  • Creating Admin role...');
+        $admin = Role::firstOrCreate(
+            ['name' => 'admin'],
             [
-                'name' => 'admin',
                 'display_name' => 'Administrator',
-                'description' => 'Full system access - can do everything',
+                'description' => 'Full system access - Can access logs, privacy settings, and all features',
                 'is_system' => true,
-            ],
-            [
-                'name' => 'buyer',
-                'display_name' => 'Buyer',
-                'description' => 'Can create RFQs, view quotes, and place orders',
-                'is_system' => true,
-            ],
-            [
-                'name' => 'seller',
-                'display_name' => 'Seller',
-                'description' => 'Can manage markets and sell products',
-                'is_system' => true,
-            ],
-            [
-                'name' => 'supplier',
-                'display_name' => 'Supplier',
-                'description' => 'Can respond to RFQs and submit quotes',
-                'is_system' => true,
-            ],
-            [
-                'name' => 'market_worker',
-                'display_name' => 'Market Worker',
-                'description' => 'Worker account managed by a seller; can be assigned to one or more markets',
-                'is_system' => true,
-            ],
-        ];
-
-        $roles = [];
-        foreach ($rolesList as $role) {
-            $roles[$role['name']] = Role::firstOrCreate(
-                ['name' => $role['name']],
-                $role
-            );
-        }
-
-        return $roles;
-    }
-
-    private function assignPermissionsToRoles(array $roles, array $permissions): void
-    {
-        // Admin - all permissions
-        $roles['admin']->permissions()->sync(array_map(fn ($perm) => $perm->id, $permissions));
-
-        // Buyer permissions
-        $roles['buyer']->permissions()->sync([
-            $permissions['view_dashboard']->id,
-            $permissions['view_products']->id,
-            $permissions['view_orders']->id,
-            $permissions['create_orders']->id,
-            $permissions['view_rfqs']->id,
-            $permissions['create_rfqs']->id,
-            $permissions['edit_rfqs']->id,
-            $permissions['view_quotes']->id,
-            $permissions['view_markets']->id,
-            $permissions['view_settings']->id,
-            $permissions['view_logs']->id,
-        ]);
-
-        // Seller permissions
-        $roles['seller']->permissions()->sync([
-            $permissions['view_dashboard']->id,
-            $permissions['view_products']->id,
-            $permissions['create_products']->id,
-            $permissions['edit_products']->id,
-            $permissions['view_orders']->id,
-            $permissions['view_markets']->id,
-            $permissions['create_markets']->id,
-            $permissions['edit_markets']->id,
-            $permissions['view_settings']->id,
-            $permissions['view_logs']->id,
-        ]);
-
-        // Supplier permissions
-        $roles['supplier']->permissions()->sync([
-            $permissions['view_dashboard']->id,
-            $permissions['view_products']->id,
-            $permissions['view_markets']->id,
-            $permissions['view_rfqs']->id,
-            $permissions['submit_quotes']->id,
-            $permissions['view_quotes']->id,
-            $permissions['edit_quotes']->id,
-            $permissions['view_orders']->id,
-            $permissions['create_orders']->id,
-            $permissions['access_supplier_portal']->id,
-            $permissions['manage_supplier_invitations']->id,
-            $permissions['view_settings']->id,
-        ]);
-    }
-
-    private function createAdminUser(array $roles): void
-    {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@dpanel.test'],
-            [
-                'name' => 'System Administrator',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'is_admin' => true,
-                'is_buyer' => true,
-                'is_seller' => true,
-                'is_supplier' => true,
-                'role' => 'admin',
-                'is_active' => true,
-                // Complete profile for admin
-                'company_name' => 'DPanel Administration',
-                'tax_id' => 'TAX-ADMIN001',
-                'business_type' => 'Corporation',
-                'business_description' => 'System administration and management',
-                'phone' => '+1-555-0100',
-                'mobile' => '+1-555-0101',
-                'website' => 'https://dpanel.test',
-                'address_line1' => '123 Admin Street',
-                'address_line2' => 'Suite 100',
-                'city' => 'Tech City',
-                'state' => 'California',
-                'postal_code' => '90210',
-                'country' => 'United States',
-                'rating' => 5.0,
-                'total_orders' => 0,
-                'completed_orders' => 0,
-                'cancelled_orders' => 0,
             ]
         );
 
-        // Ensure admin role is attached
-        if (!$admin->roles()->where('name', 'admin')->exists()) {
-            $admin->roles()->attach($roles['admin']);
-        }
+        // Admin gets ALL permissions
+        $admin->permissions()->sync($permissions->pluck('id'));
+        $roles->push($admin);
 
-        $this->command->info('✅ Admin user: admin@dpanel.test / password');
+        // Employer Role - HumanOps Access
+        $this->command->info('  • Creating Employer role...');
+        $employer = Role::firstOrCreate(
+            ['name' => 'employer'],
+            [
+                'display_name' => 'Employer',
+                'description' => 'Access to HumanOps Intelligence and organizational insights',
+                'is_system' => true,
+            ]
+        );
+
+        $employerPermissions = $permissions->filter(fn($p) =>
+            in_array($p->group, ['dashboard', 'humanops', 'settings', 'notifications']) ||
+            $p->name === 'view_users'
+        );
+        $employer->permissions()->sync($employerPermissions->pluck('id'));
+        $roles->push($employer);
+
+        // Employee Role - WorkBalance Access
+        $this->command->info('  • Creating Employee role...');
+        $employee = Role::firstOrCreate(
+            ['name' => 'employee'],
+            [
+                'display_name' => 'Employee',
+                'description' => 'Access to WorkBalance wellness application',
+                'is_system' => true,
+            ]
+        );
+
+        $employeePermissions = $permissions->filter(fn($p) =>
+            $p->group === 'workbalance' ||
+            $p->name === 'view_notifications'
+        );
+        $employee->permissions()->sync($employeePermissions->pluck('id'));
+        $roles->push($employee);
+
+        // Manager Role - Department HumanOps + WorkBalance
+        $this->command->info('  • Creating Manager role...');
+        $manager = Role::firstOrCreate(
+            ['name' => 'manager'],
+            [
+                'display_name' => 'Manager',
+                'description' => 'Department-level HumanOps access plus WorkBalance',
+                'is_system' => false,
+            ]
+        );
+
+        $managerPermissions = $permissions->filter(fn($p) =>
+            in_array($p->group, ['dashboard', 'humanops', 'workbalance', 'notifications'])
+        );
+        $manager->permissions()->sync($managerPermissions->pluck('id'));
+        $roles->push($manager);
+
+        return $roles;
     }
 }

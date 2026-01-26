@@ -25,12 +25,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // Role flags
+        // Role system (admin, employer, employee)
         'role',
         'is_admin',
-        'is_buyer',
-        'is_seller',
-        'is_supplier',
+        // WorkBalance fields
+        'department_id',
+        'job_title',
+        'hire_date',
         // Business info
         'company_name',
         'tax_id',
@@ -95,9 +96,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
-            'is_buyer' => 'boolean',
-            'is_seller' => 'boolean',
-            'is_supplier' => 'boolean',
+            'hire_date' => 'date',
             'verified_seller' => 'boolean',
             'is_active' => 'boolean',
             'payment_terms' => 'json',
@@ -173,6 +172,48 @@ class User extends Authenticatable
     public function rfqs(): HasMany
     {
         return $this->hasMany(Request::class, 'buyer_id');
+    }
+
+    /**
+     * Check-ins for WorkBalance
+     */
+    public function checkIns(): HasMany
+    {
+        return $this->hasMany(CheckIn::class);
+    }
+
+    /**
+     * Well-being tool usage records
+     */
+    public function wellBeingToolUsages(): HasMany
+    {
+        return $this->hasMany(WellBeingToolUsage::class);
+    }
+
+    /**
+     * Department this user belongs to
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // New Role System (3 roles: admin, employer, employee)
+
+    /**
+     * Check if user is an employer (can access HumanOps)
+     */
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer' || $this->is_admin;
+    }
+
+    /**
+     * Check if user is an employee (can access WorkBalance)
+     */
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee' || $this->is_admin;
     }
 
     // Role and Permission Relationships

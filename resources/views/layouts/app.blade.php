@@ -25,7 +25,11 @@
 
 @php
     // Prefer the current route prefix to keep UI theme stable.
-    if (request()->routeIs('buyer.*')) {
+    if (request()->routeIs('workbalance.*')) {
+        $currentRole = 'workbalance';
+    } elseif (request()->routeIs('humanops.*')) {
+        $currentRole = 'humanops';
+    } elseif (request()->routeIs('buyer.*')) {
         $currentRole = 'buyer';
     } elseif (request()->routeIs('seller.*')) {
         $currentRole = 'seller';

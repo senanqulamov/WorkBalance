@@ -26,19 +26,6 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Registered::class, [LogAuthenticationEvents::class, 'handleRegistered']);
         Event::listen(Failed::class, [LogAuthenticationEvents::class, 'handleFailed']);
 
-        // Register model observers for automatic workflow event tracking
-        // Observers automatically fire events and record to workflow_events table
-        \App\Models\Request::observe(\App\Observers\RequestObserver::class);
-        \App\Models\RequestItem::observe(\App\Observers\RequestItemObserver::class);
-        \App\Models\Quote::observe(\App\Observers\QuoteObserver::class);
-        \App\Models\QuoteItem::observe(\App\Observers\QuoteItemObserver::class);
-
-        // Notification listeners (keep these - they don't create duplicates)
-        Event::listen(\App\Events\RequestStatusChanged::class, \App\Listeners\SendRequestStatusNotification::class);
-        Event::listen(\App\Events\SupplierInvited::class, \App\Listeners\SendSupplierInvitationNotification::class);
-        Event::listen(\App\Events\QuoteSubmitted::class, \App\Listeners\NotifyBuyerOfQuoteSubmission::class);
-        Event::listen(\App\Events\SlaReminderDue::class, \App\Listeners\SendSlaReminderNotification::class);
-
         TallStackUi::personalize()
             // ==================== SLIDE ====================
             ->slide()
